@@ -1,0 +1,33 @@
+
+
+<polymer-element name="kkrabb-source" attributes="src">
+
+
+	<script>
+		(function(){
+
+
+			Polymer('kkrabb-source',{
+
+				src: null,
+				update: function(){
+					var xhr = new XMLHttpRequest();
+					xhr.open('get',this.src);
+					xhr.addEventListener('load',function(event){
+						var object = JSON.parse(event.target.responseText);
+						this.fire('update',object.data);
+					}.bind(this),false);
+					xhr.send()
+				},
+				ready: function(){
+					this.update();
+				}
+
+
+			});
+
+		})();
+
+	</script>
+
+</polymer-element>
