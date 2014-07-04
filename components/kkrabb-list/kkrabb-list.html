@@ -3,7 +3,11 @@
 <polymer-element name="kkrabb-list">
 
     <template>
-        <h1>Hallo hallo</h1>
+        <ul>
+        <template repeat="{{ event in events }}">
+            <li>{{ event.title[0].value }}</li>
+        </template>
+        </ul>
     </template>
 
     <script>
@@ -12,12 +16,41 @@
 
             Polymer('kkrabb-list',{
 
+                events:[],
+                /**
+                 *
+                 */
+                update: function(){
+                    var request = window.indexedDB.open("events-database", 1);
+                    request.addEventListener('upgradeneeded',function(event){
+                        var db = event.target.result;
+                        var objectStore = db.createObjectStore("events", { keyPath: "id" });
+                        objectStore.createIndex("index_id", "id", { unique: true });
+                    },false);
+                    request.addEventListener('success',function(event){
+                        var db = event.target.result;
+                        try{
+                            var transaction = db.transaction(["events"], "readwrite");
+                            var objectStore = transaction.objectStore("events");
+                            var cursorRequest = objectStore.openCursor();
+                            cursorRequest.addEventListener('success',function(event){
+                                var cursor = event.target.result;
+                                if (cursor) {
+                                    this.events.push(cursor.value);
+                                    cursor.continue();
+                                }
+                            }.bind(this),false);
+                        }catch (e){ console.log(e); }
 
-                ready: function(){
-
-
-                }
-
+                    }.bind(this),false);
+                    request.addEventListener('error',function(event){
+                        console.log(event);
+                    },false);
+                },
+                /**
+                 *
+                 */
+                ready: function(){}
 
             });
 
